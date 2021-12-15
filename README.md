@@ -12,7 +12,7 @@ The container responds with a plain login form.
 
 Any request will be inspected for `${` (headers and body).
 
-This triggers a critical-level log with the entire request as a JSON payload.
+This triggers a critical-level log with the entire request (as a dict with tuples, which is JSON-ish).
 
 ## Event log
 
