@@ -1,25 +1,21 @@
-FROM python:slim
+FROM python:3-alpine
+RUN apk --update --no-cache add curl
 
-MAINTAINER Randy Pargman "randy.pargman@binarydefense.com"
+WORKDIR /usr/src/app
 
-RUN useradd log4jhp
+COPY requirements.txt .
 
-WORKDIR /home/log4jhp
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN apt-get update -y && \
-    apt-get install -y python3-pip python-dev
+COPY app/app.py .
 
-# We copy just the requirements.txt first to leverage Docker cache
-COPY requirements.txt requirements.txt
-RUN python3 -m venv venv
-RUN venv/bin/pip install -r requirements.txt
+HEALTHCHECK --interval=90s --timeout=1s --start-period=5s \
+    CMD curl --fail http://127.0.0.1:8080/healthcheck
 
-COPY app app
-COPY boot.sh ./
-RUN chmod +x boot.sh
-RUN chown -R log4jhp:log4jhp ./
-USER log4jhp
+ENV FLASK_ENV production
+ENV FLASK_APP app.py
+ENV FLASK_DEBUG 0
 
 EXPOSE 8080
-ENTRYPOINT [ "./boot.sh" ]
 
+CMD [ "python", "./app.py" ]

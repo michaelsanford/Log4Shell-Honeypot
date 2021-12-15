@@ -1,0 +1,10 @@
+version: "3"
+services:
+  log4shell-honeypot:
+    container_name: log4shell-honeypot
+    image: msanford/log4shell-honeypot:latest
+    ports:
+      - "80:8080"
+    environment:
+      HONEYPOT_NAME: "log4shell-honeypot"
+    restart: on-failure

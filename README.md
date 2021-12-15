@@ -1,28 +1,66 @@
-# log4j-honeypot-flask
-Internal network honeypot for detecting if an attacker or insider threat scans your network for log4j CVE-2021-44228
+# Log4Shell Honeypot
 
-This can be installed on a workstation or server, either by running the Python app/app.py script directly (you'll need python3, Flask, and Requests) or as a Docker container.
+Dockerized honeypot for [CVE-2021-44228](https://nvd.nist.gov/vuln/detail/CVE-2021-44228) based on Alpine, written in Python/Flask.
 
-You will need to set some environment variables (or hard-code them into the script):
-WEBHOOK_URL=your Teams, Slack or Mattermost webhook URL to receive notifications
-HONEYPOT_NAME=unique name for this honeypot so you know where the alerts came from
-HONEYPOT_PORT=8080 or whatever port you want it to listen on
+## Detection Rule
 
-Important Note: This is a LOW-INTERACTION honeypot meant for internal active defense. It is not supposed to be vulnerable or let attackers get into anything.
+The container responds with a plain login form.
 
-All it does is watch for suspicious string patterns in the requests (form fields and HTTP headers) and alert you if anything weird comes through by sending a message 
-on Teams or Slack.
+Any request will be inspected for `${` (headers and body).
 
-# Example running via Docker:
-docker build -t log4j-honeypot-flask:latest
+This triggers a critical-level log with the entire request as a JSON payload.
 
-docker run -d -p 8080:8080 -e WEBHOOK_URL=https://yourwebhookurl -e HONEYPOT_NAME=dmz_log4j_hp log4j-honeypot-flask
+## Event log
 
-# Example running via command line:
-export WEBHOOK_URL=https://yourwebhookurl
+The event log will look like this (but as a single line):
 
-export HONEYPOT_NAME=LittleBobbyJNDI
+```yaml
+CRITICAL:<HONEYPOT_NAME>:{
+  'honeypot': '<HONEYPOT_NAME>', 
+  'source': '172.17.0.1',
+  'headers': EnvironHeaders([
+    ('Host', 'localhost:8080'),
+    ('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:96.0) Gecko/20100101 Firefox/96.0'),
+    ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'),
+    ('Accept-Language', 'en-CA,fr-CA;q=0.5'),
+    ('Accept-Encoding', 'gzip, deflate'),
+    ('Content-Type', 'application/x-www-form-urlencoded'),
+    ('Content-Length', '45'), 
+    ('Origin', 'http://localhost:8080'),
+    ('Connection', 'keep-alive'), 
+    ('Referer', 'http://localhost:8080/'), 
+    ('Upgrade-Insecure-Requests', '1'), 
+    ('Sec-Fetch-Dest', 'document'), 
+    ('Sec-Fetch-Mode', 'navigate'), 
+    ('Sec-Fetch-Site', 'same-origin'), 
+    ('Sec-Fetch-User', '?1')
+  ]),
+  'body': [
+    ('username', '${'), 
+    ('password', ''), 
+    ('submit', 'Submit Query')
+  ]}
+```
 
-export HONEYPOT_PORT=8081
+## Docker Quickstart
 
-python3 app/app.py
+```shell
+# x86_64
+docker run -d -p 8080:8080 -e HONEYPOT_NAME="log4shell-honeypot" --name="log4shell-honeypot" msanford/log4shell-honeypot:latest
+
+# ARM (e.g., Raspberry Pi)
+docker run -d -p 8080:8080 -e HONEYPOT_NAME="log4shell-honeypot" --name="log4shell-honeypot" msanford/log4shell-honeypot:arm-latest
+```
+
+A `docker-compose.yml` fragment is also provided.
+
+### Build
+
+```shell
+docker build -t log4shell-honeypot:latest .
+```
+
+
+# Acknowledgements
+
+This is a modified fork of [BinaryDefense/log4shell-honeypot-flask](https://github.com/BinaryDefense/log4shell-honeypot-flask) 👏🏼.
