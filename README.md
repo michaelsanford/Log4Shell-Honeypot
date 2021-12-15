@@ -2,6 +2,10 @@
 
 Dockerized honeypot for [CVE-2021-44228](https://nvd.nist.gov/vuln/detail/CVE-2021-44228) based on Alpine, written in Python/Flask.
 
+[![Snyk Container](https://github.com/michaelsanford/Log4Shell-Honeypot/actions/workflows/snyk-container-analysis.yml/badge.svg)](https://github.com/michaelsanford/Log4Shell-Honeypot/actions/workflows/snyk-container-analysis.yml)
+[![CodeQL](https://github.com/michaelsanford/Log4Shell-Honeypot/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/michaelsanford/Log4Shell-Honeypot/actions/workflows/codeql-analysis.yml)
+[![Pylint](https://github.com/michaelsanford/Log4Shell-Honeypot/actions/workflows/pylint.yml/badge.svg)](https://github.com/michaelsanford/Log4Shell-Honeypot/actions/workflows/pylint.yml)
+
 ## Detection Rule
 
 The container responds with a plain login form.
