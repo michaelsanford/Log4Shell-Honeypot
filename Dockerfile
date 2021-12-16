@@ -1,5 +1,9 @@
 FROM python:3-alpine
-RUN apk --update --no-cache add curl
+
+RUN addgroup --gid 1000 --system honeypot && \
+    adduser --uid 1000 --system --home /usr/src/app --ingroup honeypot honeypot
+
+USER honeypot
 
 WORKDIR /usr/src/app
 
@@ -7,10 +11,7 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app/app.py .
-
-HEALTHCHECK --interval=90s --timeout=1s --start-period=5s \
-    CMD curl --fail http://127.0.0.1:8080/healthcheck
+COPY app/*.py .
 
 ENV FLASK_ENV production
 ENV FLASK_APP app.py
