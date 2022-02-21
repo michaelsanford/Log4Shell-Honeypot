@@ -1,4 +1,4 @@
-FROM python:3-alpine
+FROM python:3.11.0a5-alpine
 
 RUN addgroup --gid 1000 --system honeypot && \
     adduser --uid 1000 --system --home /usr/src/app --ingroup honeypot honeypot
