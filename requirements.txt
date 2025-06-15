@@ -1,3 +1,3 @@
 Flask==2.3.2
-Requests>=2.26
+Requests>=2.32.4
 waitress>=2.0.0
