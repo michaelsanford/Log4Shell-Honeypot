@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 services:
   log4shell-honeypot:
     container_name: log4shell-honeypot
@@ -7,4 +7,52 @@ services:
       - "80:8080"
     environment:
       HONEYPOT_NAME: "log4shell-honeypot"
-    restart: on-failure
+      LOG_LEVEL: "INFO"
+      LOG_FORMAT: "json"
+      MAX_LOG_SIZE: "10485760"
+      LOG_BACKUP_COUNT: "5"
+      RATE_LIMIT_REQUESTS: "100"
+      RATE_LIMIT_WINDOW: "3600"
+    volumes:
+      - honeypot-logs:/var/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8080/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+
+  nginx:
+    image: nginx:alpine
+    container_name: log4shell-nginx
+    ports:
+      - "443:443"
+      - "8443:8443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - log4shell-honeypot
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  honeypot-logs:
